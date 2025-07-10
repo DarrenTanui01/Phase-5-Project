@@ -8,8 +8,8 @@ from utils import role_required
 user_schema = UserSchema()
 
 class UserAPI(MethodView):
-    @jwt_required()
-    @role_required('admin')
+    decorators = [role_required('admin'), jwt_required()]
+
     def get(self, user_id=None):
         if user_id:
             user = User.query.get_or_404(user_id)
@@ -17,8 +17,6 @@ class UserAPI(MethodView):
         users = User.query.all()
         return user_schema.dump(users, many=True)
 
-    @jwt_required()
-    @role_required('admin')
     def delete(self, user_id):
         user = User.query.get_or_404(user_id)
         db.session.delete(user)

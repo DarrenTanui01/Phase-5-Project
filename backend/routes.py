@@ -3,11 +3,18 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from models import db, User, Supplier, Customer, Product, Order, order_product
 from schemas import UserSchema, SupplierSchema, CustomerSchema, ProductSchema, OrderSchema
 from datetime import datetime
-from views.supplier import SupplierAPI
+from views.supplier import SupplierAPI, SupplierFinanceAPI, SupplierReportAPI, SupplierAnalyticsAPI
 from views.user import UserAPI
-from views.customer import CustomerAPI
-from views.product import ProductAPI
+from views.customer import CustomerAPI, CustomerFinanceAPI, CustomerReportAPI
+from views.product import ProductAPI, ProductConversionAPI, ProductTransferAPI, ProductWriteOffAPI
 from views.order import OrderAPI
+from views.bank import BankAccountAPI, BankTransactionAPI, PostingAPI
+from views.admin import UserRoleAPI, UserPermissionAPI
+from views.stock import CompanyAPI
+from views.report import (
+    StockReportAPI, StockAnalysisAPI,
+    SalesReportAPI, DashboardAnalyticsAPI, TrendInsightsAPI
+)
 
 api_bp = Blueprint('api', __name__)
 
@@ -39,6 +46,39 @@ order_view = OrderAPI.as_view('order_api')
 api_bp.add_url_rule('/orders', defaults={'order_id': None}, view_func=order_view, methods=['GET'])
 api_bp.add_url_rule('/orders', view_func=order_view, methods=['POST'])
 api_bp.add_url_rule('/orders/<int:order_id>', view_func=order_view, methods=['GET', 'PUT', 'DELETE'])
+
+# Bank endpoints
+bank_account_view = BankAccountAPI.as_view('bank_account_api')
+api_bp.add_url_rule('/bank_accounts', defaults={'account_id': None}, view_func=bank_account_view, methods=['GET'])
+api_bp.add_url_rule('/bank_accounts', view_func=bank_account_view, methods=['POST'])
+api_bp.add_url_rule('/bank_accounts/<int:account_id>', view_func=bank_account_view, methods=['GET', 'PUT', 'DELETE'])
+
+bank_transaction_view = BankTransactionAPI.as_view('bank_transaction_api')
+api_bp.add_url_rule('/bank_transactions', defaults={'transaction_id': None}, view_func=bank_transaction_view, methods=['GET'])
+api_bp.add_url_rule('/bank_transactions', view_func=bank_transaction_view, methods=['POST'])
+api_bp.add_url_rule('/bank_transactions/<int:transaction_id>', view_func=bank_transaction_view, methods=['GET'])
+
+posting_view = PostingAPI.as_view('posting_api')
+api_bp.add_url_rule('/postings', defaults={'posting_id': None}, view_func=posting_view, methods=['GET'])
+api_bp.add_url_rule('/postings', view_func=posting_view, methods=['POST'])
+api_bp.add_url_rule('/postings/<int:posting_id>', view_func=posting_view, methods=['GET'])
+
+# Admin endpoints
+role_view = UserRoleAPI.as_view('role_api')
+api_bp.add_url_rule('/roles', defaults={'role_id': None}, view_func=role_view, methods=['GET'])
+api_bp.add_url_rule('/roles', view_func=role_view, methods=['POST'])
+api_bp.add_url_rule('/roles/<int:role_id>', view_func=role_view, methods=['GET'])
+
+permission_view = UserPermissionAPI.as_view('permission_api')
+api_bp.add_url_rule('/permissions', defaults={'permission_id': None}, view_func=permission_view, methods=['GET'])
+api_bp.add_url_rule('/permissions', view_func=permission_view, methods=['POST'])
+api_bp.add_url_rule('/permissions/<int:permission_id>', view_func=permission_view, methods=['GET'])
+
+# Stock/Company endpoints
+company_view = CompanyAPI.as_view('company_api')
+api_bp.add_url_rule('/companies', defaults={'company_id': None}, view_func=company_view, methods=['GET'])
+api_bp.add_url_rule('/companies', view_func=company_view, methods=['POST'])
+api_bp.add_url_rule('/companies/<int:company_id>', view_func=company_view, methods=['GET', 'PUT', 'DELETE'])
 
 user_schema = UserSchema()
 supplier_schema = SupplierSchema()
@@ -88,130 +128,32 @@ def login():
     return jsonify({'error': 'Invalid credentials'}), 401
 
 
-@api_bp.route('/customers', methods=['GET', 'POST'])
-@jwt_required()
-def customers():
-    if request.method == 'GET':
-        customers = Customer.query.all()
-        return jsonify(customer_schema.dump(customers, many=True))
-    data = request.json
-    errors = customer_schema.validate(data)
-    if errors:
-        return jsonify(errors), 400
-    customer = Customer(**data)
-    db.session.add(customer)
-    db.session.commit()
-    return customer_schema.dump(customer), 201
-
-@api_bp.route('/customers/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-@jwt_required()
-def customer_detail(id):
-    customer = Customer.query.get_or_404(id)
-    if request.method == 'GET':
-        return customer_schema.dump(customer)
-    if request.method == 'PUT':
-        data = request.json
-        errors = customer_schema.validate(data)
-        if errors:
-            return jsonify(errors), 400
-        customer.name = data['name']
-        customer.contact_info = data.get('contact_info', customer.contact_info)
-        db.session.commit()
-        return customer_schema.dump(customer)
-    if request.method == 'DELETE':
-        db.session.delete(customer)
-        db.session.commit()
-        return '', 204
-
-
-@api_bp.route('/products', methods=['GET', 'POST'])
-@jwt_required()
-def products():
-    if request.method == 'GET':
-        products = Product.query.all()
-        return jsonify(product_schema.dump(products, many=True))
-    data = request.json
-    errors = product_schema.validate(data)
-    if errors:
-        return jsonify(errors), 400
-    product = Product(**data)
-    db.session.add(product)
-    db.session.commit()
-    return product_schema.dump(product), 201
-
-@api_bp.route('/products/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-@jwt_required()
-def product_detail(id):
-    product = Product.query.get_or_404(id)
-    if request.method == 'GET':
-        return product_schema.dump(product)
-    if request.method == 'PUT':
-        data = request.json
-        errors = product_schema.validate(data)
-        if errors:
-            return jsonify(errors), 400
-        product.name = data['name']
-        product.description = data.get('description', product.description)
-        product.price = data['price']
-        product.stock = data.get('stock', product.stock)
-        product.supplier_id = data['supplier_id']
-        db.session.commit()
-        return product_schema.dump(product)
-    if request.method == 'DELETE':
-        db.session.delete(product)
-        db.session.commit()
-        return '', 204
-
-
-@api_bp.route('/orders', methods=['GET', 'POST'])
-@jwt_required()
-def orders():
-    if request.method == 'GET':
-        orders = Order.query.all()
-        return jsonify(order_schema.dump(orders, many=True))
-    data = request.json
-    errors = order_schema.validate(data)
-    if errors:
-        return jsonify(errors), 400
-    order = Order(
-        customer_id=data['customer_id'],
-        date=datetime.utcnow(),
-        status=data.get('status', 'pending')
-    )
-    db.session.add(order)
-    db.session.flush()  
-    for prod in data.get('products', []):
-        db.session.execute(order_product.insert().values(
-            order_id=order.id,
-            product_id=prod['product_id'],
-            quantity=prod['quantity']
-        ))
-    db.session.commit()
-    return order_schema.dump(order), 201
-
-@api_bp.route('/orders/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-@jwt_required()
-def order_detail(id):
-    order = Order.query.get_or_404(id)
-    if request.method == 'GET':
-        return order_schema.dump(order)
-    if request.method == 'PUT':
-        data = request.json
-        errors = order_schema.validate(data)
-        if errors:
-            return jsonify(errors), 400
-        order.status = data.get('status', order.status)
-        db.session.commit()
-        return order_schema.dump(order)
-    if request.method == 'DELETE':
-        db.session.delete(order)
-        db.session.commit()
-        return '', 204
-
-
 @api_bp.route('/some_route', methods=['GET'])
 @jwt_required()
 def some_route():
     user_id = get_jwt_identity()
     
     return jsonify({'user_id': user_id}), 200
+
+# Supplier dashboard endpoints
+api_bp.add_url_rule('/supplier_finances', view_func=SupplierFinanceAPI.as_view('supplier_finances_api'), methods=['GET'])
+api_bp.add_url_rule('/supplier_reports', view_func=SupplierReportAPI.as_view('supplier_reports_api'), methods=['GET'])
+api_bp.add_url_rule('/supplier_analytics', view_func=SupplierAnalyticsAPI.as_view('supplier_analytics_api'), methods=['GET'])
+
+# Customer dashboard endpoints
+api_bp.add_url_rule('/customer_finances', view_func=CustomerFinanceAPI.as_view('customer_finances_api'), methods=['GET'])
+api_bp.add_url_rule('/customer_reports', view_func=CustomerReportAPI.as_view('customer_reports_api'), methods=['GET'])
+
+# Product dashboard endpoints
+api_bp.add_url_rule('/product_conversions', view_func=ProductConversionAPI.as_view('product_conversions_api'), methods=['POST'])
+api_bp.add_url_rule('/product_transfers', view_func=ProductTransferAPI.as_view('product_transfers_api'), methods=['POST'])
+api_bp.add_url_rule('/product_writeoffs', view_func=ProductWriteOffAPI.as_view('product_writeoffs_api'), methods=['POST'])
+
+# Stock/Reports endpoints
+api_bp.add_url_rule('/stock_reports', view_func=StockReportAPI.as_view('stock_reports_api'), methods=['GET'])
+api_bp.add_url_rule('/stock_analysis', view_func=StockAnalysisAPI.as_view('stock_analysis_api'), methods=['GET'])
+
+# Admin/Reports endpoints
+api_bp.add_url_rule('/sales_reports', view_func=SalesReportAPI.as_view('sales_reports_api'), methods=['GET'])
+api_bp.add_url_rule('/dashboard_analytics', view_func=DashboardAnalyticsAPI.as_view('dashboard_analytics_api'), methods=['GET'])
+api_bp.add_url_rule('/trend_insights', view_func=TrendInsightsAPI.as_view('trend_insights_api'), methods=['GET'])

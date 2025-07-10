@@ -8,7 +8,7 @@ from utils import role_required
 customer_schema = CustomerSchema()
 
 class CustomerAPI(MethodView):
-    decorators = [jwt_required(), role_required('admin', 'customer')]
+    decorators = [role_required('admin', 'customer'), jwt_required()]
 
     def get(self, customer_id=None):
         if customer_id:
@@ -43,3 +43,15 @@ class CustomerAPI(MethodView):
         db.session.delete(customer)
         db.session.commit()
         return '', 204
+
+class CustomerFinanceAPI(MethodView):
+    decorators = [role_required('admin', 'customer'), jwt_required()]
+
+    def get(self):
+        return jsonify({'message': 'Customer finances endpoint'}), 200
+
+class CustomerReportAPI(MethodView):
+    decorators = [role_required('admin', 'customer'), jwt_required()]
+
+    def get(self):
+        return jsonify({'message': 'Customer reports endpoint'}), 200

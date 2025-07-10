@@ -8,7 +8,7 @@ from utils import role_required
 product_schema = ProductSchema()
 
 class ProductAPI(MethodView):
-    decorators = [jwt_required(), role_required('admin', 'supplier')]
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
 
     def get(self, product_id=None):
         if product_id:
@@ -46,3 +46,21 @@ class ProductAPI(MethodView):
         db.session.delete(product)
         db.session.commit()
         return '', 204
+
+class ProductConversionAPI(MethodView):
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
+
+    def post(self):
+        return jsonify({'message': 'Product conversion endpoint'}), 200
+
+class ProductTransferAPI(MethodView):
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
+
+    def post(self):
+        return jsonify({'message': 'Product transfer endpoint'}), 200
+
+class ProductWriteOffAPI(MethodView):
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
+
+    def post(self):
+        return jsonify({'message': 'Product write-off endpoint'}), 200

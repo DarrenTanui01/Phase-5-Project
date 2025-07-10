@@ -59,3 +59,43 @@ class Order(db.Model):
                 "quantity": association.quantity
             })
         return results
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    permissions = db.relationship('Permission', backref='role', lazy=True)
+
+class Permission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+
+class BankAccount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    account_name = db.Column(db.String(120), nullable=False)
+    account_number = db.Column(db.String(50), nullable=False)
+    bank_name = db.Column(db.String(120), nullable=False)
+    balance = db.Column(db.Float, default=0.0)
+
+class BankTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    bank_account_id = db.Column(db.Integer, db.ForeignKey('bank_account.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    transaction_type = db.Column(db.String(20))  # deposit, withdrawal, transfer
+    date = db.Column(db.DateTime)
+    description = db.Column(db.String(200))
+    bank_account = db.relationship('BankAccount', backref='transactions')
+
+class Posting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    posting_type = db.Column(db.String(50))  # supplier, customer, other
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime)
+    description = db.Column(db.String(200))
+    related_id = db.Column(db.Integer)  # supplier_id, customer_id, etc.
+
+class Company(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(200))
+    contact_info = db.Column(db.String(200))

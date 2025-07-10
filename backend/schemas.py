@@ -39,3 +39,41 @@ class OrderSchema(Schema):
 
     def get_products_with_quantities(self, obj):
         return obj.products_with_quantities()
+
+class RoleSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+
+class PermissionSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+    role_id = fields.Int()
+
+class BankAccountSchema(Schema):
+    id = fields.Int(dump_only=True)
+    account_name = fields.Str(required=True)
+    account_number = fields.Str(required=True)
+    bank_name = fields.Str(required=True)
+    balance = fields.Float()
+
+class BankTransactionSchema(Schema):
+    id = fields.Int(dump_only=True)
+    bank_account_id = fields.Int(required=True)
+    amount = fields.Float(required=True)
+    transaction_type = fields.Str(required=True)
+    date = fields.DateTime()
+    description = fields.Str()
+
+class PostingSchema(Schema):
+    id = fields.Int(dump_only=True)
+    posting_type = fields.Str(required=True)
+    amount = fields.Float(required=True)
+    date = fields.DateTime()
+    description = fields.Str()
+    related_id = fields.Int()
+
+class CompanySchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+    address = fields.Str()
+    contact_info = fields.Str()

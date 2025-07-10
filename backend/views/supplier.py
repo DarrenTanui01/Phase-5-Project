@@ -8,7 +8,7 @@ from utils import role_required
 supplier_schema = SupplierSchema()
 
 class SupplierAPI(MethodView):
-    decorators = [jwt_required(), role_required('admin', 'supplier')]
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
 
     def get(self, supplier_id=None):
         if supplier_id:
@@ -43,3 +43,24 @@ class SupplierAPI(MethodView):
         db.session.delete(supplier)
         db.session.commit()
         return '', 204
+
+class SupplierFinanceAPI(MethodView):
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
+
+    def get(self):
+        # Return supplier financial data (stub)
+        return jsonify({'message': 'Supplier finances endpoint'}), 200
+
+class SupplierReportAPI(MethodView):
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
+
+    def get(self):
+        # Return supplier reports (stub)
+        return jsonify({'message': 'Supplier reports endpoint'}), 200
+
+class SupplierAnalyticsAPI(MethodView):
+    decorators = [role_required('admin', 'supplier'), jwt_required()]
+
+    def get(self):
+        # Return supplier analytics (stub)
+        return jsonify({'message': 'Supplier analytics endpoint'}), 200

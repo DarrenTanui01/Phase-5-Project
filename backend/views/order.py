@@ -9,7 +9,7 @@ from datetime import datetime
 order_schema = OrderSchema()
 
 class OrderAPI(MethodView):
-    decorators = [role_required({'admin': ['GET'], 'customer': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
+    decorators = [role_required({'admin': ['GET', 'POST'], 'customer': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
 
     def get(self, order_id=None):
         if order_id:

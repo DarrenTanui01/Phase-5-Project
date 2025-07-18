@@ -4,7 +4,7 @@ from models import db, User, Supplier, Customer, Product, Order, order_product
 from schemas import UserSchema, SupplierSchema, CustomerSchema, ProductSchema, OrderSchema
 from datetime import datetime
 from views.supplier import SupplierAPI, SupplierFinanceAPI, SupplierReportAPI, SupplierAnalyticsAPI
-from views.user import UserAPI
+from views.user import UserAPI, AdminDashboardAPI
 from views.customer import CustomerAPI, CustomerFinanceAPI, CustomerReportAPI
 from views.product import ProductAPI, ProductConversionAPI, ProductTransferAPI, ProductWriteOffAPI
 from views.order import OrderAPI
@@ -22,6 +22,10 @@ api_bp = Blueprint('api', __name__)
 user_view = UserAPI.as_view('user_api')
 api_bp.add_url_rule('/users', defaults={'user_id': None}, view_func=user_view, methods=['GET'])
 api_bp.add_url_rule('/users/<int:user_id>', view_func=user_view, methods=['GET', 'DELETE'])
+
+# Admin dashboard endpoint
+admin_dashboard_view = AdminDashboardAPI.as_view('admin_dashboard_api')
+api_bp.add_url_rule('/users/admin', view_func=admin_dashboard_view, methods=['GET'])
 
 # Supplier endpoints
 supplier_view = SupplierAPI.as_view('supplier_api')

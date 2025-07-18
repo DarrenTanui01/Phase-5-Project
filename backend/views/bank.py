@@ -11,7 +11,7 @@ bank_transaction_schema = BankTransactionSchema()
 posting_schema = PostingSchema()
 
 class BankAccountAPI(MethodView):
-    decorators = [role_required('admin', 'bank'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'bank': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
 
     def get(self, account_id=None):
         if account_id:
@@ -49,7 +49,7 @@ class BankAccountAPI(MethodView):
         return '', 204
 
 class BankTransactionAPI(MethodView):
-    decorators = [role_required('admin', 'bank'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'bank': ['GET', 'POST']}), jwt_required()]
 
     def get(self, transaction_id=None):
         if transaction_id:
@@ -75,7 +75,7 @@ class BankTransactionAPI(MethodView):
         return bank_transaction_schema.dump(transaction), 201
 
 class PostingAPI(MethodView):
-    decorators = [role_required('admin', 'bank'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'bank': ['GET', 'POST']}), jwt_required()]
 
     def get(self, posting_id=None):
         if posting_id:

@@ -10,7 +10,7 @@ role_schema = RoleSchema()
 permission_schema = PermissionSchema()
 
 class UserRoleAPI(MethodView):
-    decorators = [role_required('admin'), jwt_required()]
+    decorators = [role_required({'admin': ['GET', 'POST']}), jwt_required()]
 
     def get(self, role_id=None):
         if role_id:
@@ -30,7 +30,7 @@ class UserRoleAPI(MethodView):
         return role_schema.dump(role), 201
 
 class UserPermissionAPI(MethodView):
-    decorators = [role_required('admin'), jwt_required()]
+    decorators = [role_required({'admin': ['GET', 'POST']}), jwt_required()]
 
     def get(self, permission_id=None):
         if permission_id:

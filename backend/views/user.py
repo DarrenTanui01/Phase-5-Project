@@ -8,7 +8,7 @@ from utils import role_required
 user_schema = UserSchema()
 
 class UserAPI(MethodView):
-    decorators = [role_required('admin'), jwt_required()]
+    decorators = [role_required({'admin': ['GET', 'DELETE']}), jwt_required()]
 
     def get(self, user_id=None):
         if user_id:

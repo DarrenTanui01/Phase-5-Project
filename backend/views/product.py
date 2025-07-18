@@ -8,7 +8,7 @@ from utils import role_required
 product_schema = ProductSchema()
 
 class ProductAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['GET', 'POST', 'PUT', 'DELETE'], 'supplier': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
 
     def get(self, product_id=None):
         if product_id:
@@ -48,19 +48,63 @@ class ProductAPI(MethodView):
         return '', 204
 
 class ProductConversionAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['POST'], 'supplier': ['POST']}), jwt_required()]
 
     def post(self):
-        return jsonify({'message': 'Product conversion endpoint'}), 200
+        data = request.json
+        from_product = Product.query.get(data.get('from_product_id'))
+        to_product = Product.query.get(data.get('to_product_id'))
+        quantity = data.get('quantity', 0)
+        if not from_product or not to_product:
+            return jsonify({'error': 'Product not found'}), 404
+        if from_product.stock < quantity:
+            return jsonify({'error': 'Insufficient stock for conversion'}), 400
+        from_product.stock -= quantity
+        to_product.stock += quantity
+        db.session.commit()
+        return jsonify({
+            "converted_from": {"id": from_product.id, "name": from_product.name, "remaining_stock": from_product.stock},
+            "converted_to": {"id": to_product.id, "name": to_product.name, "new_stock": to_product.stock},
+            "quantity_converted": quantity
+        }), 200
 
 class ProductTransferAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['POST'], 'supplier': ['POST']}), jwt_required()]
 
     def post(self):
-        return jsonify({'message': 'Product transfer endpoint'}), 200
+        data = request.json
+        product = Product.query.get(data['product_id'])
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        quantity = data.get('quantity', 0)
+        if product.stock < quantity:
+            return jsonify({'error': 'Insufficient stock'}), 400
+        product.stock -= quantity
+        db.session.commit()
+        return jsonify({
+            "product_id": product.id,
+            "from_location": data.get('from_location'),
+            "to_location": data.get('to_location'),
+            "quantity_transferred": quantity,
+            "remaining_stock": product.stock
+        }), 200
 
 class ProductWriteOffAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['POST'], 'supplier': ['POST']}), jwt_required()]
 
     def post(self):
-        return jsonify({'message': 'Product write-off endpoint'}), 200
+        data = request.json
+        product = Product.query.get(data['product_id'])
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        quantity = data.get('quantity', 0)
+        if product.stock < quantity:
+            return jsonify({'error': 'Insufficient stock'}), 400
+        product.stock -= quantity
+        db.session.commit()
+        return jsonify({
+            "product_id": product.id,
+            "quantity_written_off": quantity,
+            "reason": data.get('reason'),
+            "remaining_stock": product.stock
+        }), 200

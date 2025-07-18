@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask import request, jsonify
-from models import Order, db, order_product
+from models import Order, db, order_product, Product
 from schemas import OrderSchema
 from utils import role_required
 from datetime import datetime
@@ -9,7 +9,7 @@ from datetime import datetime
 order_schema = OrderSchema()
 
 class OrderAPI(MethodView):
-    decorators = [role_required('admin', 'customer'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'customer': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
 
     def get(self, order_id=None):
         if order_id:
@@ -36,6 +36,13 @@ class OrderAPI(MethodView):
                 product_id=prod['product_id'],
                 quantity=prod['quantity']
             ))
+            
+            product = Product.query.get(prod['product_id'])
+            if product:
+                if product.stock < prod['quantity']:
+                    db.session.rollback()
+                    return jsonify({'error': f'Insufficient stock for product {product.name}'}), 400
+                product.stock -= prod['quantity']
         db.session.commit()
         return order_schema.dump(order), 201
 

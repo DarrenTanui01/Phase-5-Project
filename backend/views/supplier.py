@@ -8,7 +8,7 @@ from utils import role_required
 supplier_schema = SupplierSchema()
 
 class SupplierAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['GET','POST'], 'supplier': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
 
     def get(self, supplier_id=None):
         if supplier_id:
@@ -45,22 +45,50 @@ class SupplierAPI(MethodView):
         return '', 204
 
 class SupplierFinanceAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'supplier': ['GET']}), jwt_required()]
 
     def get(self):
-        # Return supplier financial data (stub)
-        return jsonify({'message': 'Supplier finances endpoint'}), 200
+        suppliers = Supplier.query.all()
+        result = []
+        for supplier in suppliers:
+            total_products = len(supplier.products)
+            total_stock_value = sum(p.price * p.stock for p in supplier.products)
+            result.append({
+                "supplier_id": supplier.id,
+                "name": supplier.name,
+                "total_products": total_products,
+                "total_stock_value": total_stock_value
+            })
+        return jsonify(result), 200
 
 class SupplierReportAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'supplier': ['GET']}), jwt_required()]
 
     def get(self):
-        # Return supplier reports (stub)
-        return jsonify({'message': 'Supplier reports endpoint'}), 200
+        suppliers = Supplier.query.all()
+        report = []
+        for supplier in suppliers:
+            products = [{"id": p.id, "name": p.name, "stock": p.stock, "price": p.price} for p in supplier.products]
+            report.append({
+                "supplier_id": supplier.id,
+                "name": supplier.name,
+                "products": products
+            })
+        return jsonify(report), 200
 
 class SupplierAnalyticsAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'supplier': ['GET']}), jwt_required()]
 
     def get(self):
-        # Return supplier analytics (stub)
-        return jsonify({'message': 'Supplier analytics endpoint'}), 200
+        suppliers = Supplier.query.all()
+        analytics = []
+        for supplier in suppliers:
+            total_stock = sum(p.stock for p in supplier.products)
+            avg_price = sum(p.price for p in supplier.products) / len(supplier.products) if supplier.products else 0
+            analytics.append({
+                "supplier_id": supplier.id,
+                "name": supplier.name,
+                "total_stock": total_stock,
+                "average_price": avg_price
+            })
+        return jsonify(analytics), 200

@@ -8,7 +8,7 @@ from utils import role_required
 company_schema = CompanySchema()
 
 class CompanyAPI(MethodView):
-    decorators = [role_required('admin', 'supplier'), jwt_required()]
+    decorators = [role_required({'admin': ['GET', 'POST', 'PUT', 'DELETE'], 'company': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
 
     def get(self, company_id=None):
         if company_id:

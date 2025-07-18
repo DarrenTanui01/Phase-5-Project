@@ -1,14 +1,14 @@
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask import request, jsonify
-from models import Customer, db
+from models import Customer, db, Product
 from schemas import CustomerSchema
 from utils import role_required
 
 customer_schema = CustomerSchema()
 
 class CustomerAPI(MethodView):
-    decorators = [role_required('admin', 'customer'), jwt_required()]
+    decorators = [role_required({'admin': ['GET', 'POST', 'PUT', 'DELETE'], 'customer': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
 
     def get(self, customer_id=None):
         if customer_id:
@@ -45,13 +45,43 @@ class CustomerAPI(MethodView):
         return '', 204
 
 class CustomerFinanceAPI(MethodView):
-    decorators = [role_required('admin', 'customer'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'customer': ['GET']}), jwt_required()]
 
     def get(self):
-        return jsonify({'message': 'Customer finances endpoint'}), 200
+        customers = Customer.query.all()
+        result = []
+        for customer in customers:
+            total_orders = len(customer.orders)
+            total_spent = 0
+            for order in customer.orders:
+                for prod in order.products_with_quantities():
+                    product = Product.query.get(prod['product_id'])
+                    total_spent += product.price * prod['quantity']
+            result.append({
+                "customer_id": customer.id,
+                "name": customer.name,
+                "total_orders": total_orders,
+                "total_spent": total_spent
+            })
+        return jsonify(result), 200
 
 class CustomerReportAPI(MethodView):
-    decorators = [role_required('admin', 'customer'), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'customer': ['GET']}), jwt_required()]
 
     def get(self):
-        return jsonify({'message': 'Customer reports endpoint'}), 200
+        customers = Customer.query.all()
+        report = []
+        for customer in customers:
+            total_orders = len(customer.orders)
+            total_spent = 0
+            for order in customer.orders:
+                for prod in order.products_with_quantities():
+                    product = Product.query.get(prod['product_id'])
+                    total_spent += product.price * prod['quantity']
+            report.append({
+                "customer_id": customer.id,
+                "name": customer.name,
+                "total_orders": total_orders,
+                "total_spent": total_spent
+            })
+        return jsonify(report), 200

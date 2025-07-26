@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 import { Typography, Card, Grid } from "@mui/material";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const TrendInsights = () => {
   const [trends, setTrends] = useState({
@@ -24,12 +24,12 @@ const TrendInsights = () => {
         <Grid item xs={12} md={4}>
           <Typography variant="subtitle1">Orders</Typography>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={formatData(trends.orders_last_7_days)}>
+            <LineChart data={formatData(trends.orders_last_7_days)}>
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="value" fill="#1976d2" />
-            </BarChart>
+              <Line type="monotone" dataKey="value" stroke="#1976d2" />
+            </LineChart>
           </ResponsiveContainer>
         </Grid>
         <Grid item xs={12} md={4}>

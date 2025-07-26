@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography, Paper } from "@mui/material";
+import { Box, Button, TextField, Typography, Paper, Link as MuiLink } from "@mui/material";
 import api from "../../api/api";
 import useAuth from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 const Login = () => {
   const [form, setForm] = useState({ username: "", password: "" });
@@ -33,6 +33,11 @@ const Login = () => {
           {error && <Typography color="error">{error}</Typography>}
           <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Login</Button>
         </form>
+        <Box sx={{ mt: 2, textAlign: "center" }}>
+          <MuiLink component={RouterLink} to="/register" underline="hover">
+            Don't have an account? Register
+          </MuiLink>
+        </Box>
       </Paper>
     </Box>
   );

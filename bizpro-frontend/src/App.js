@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout/Layout"; 
 import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
 import AdminDashboard from "./components/Dashboard/AdminDashboard";
 import SupplierDashboard from "./components/Dashboard/SupplierDashboard";
 import CustomerDashboard from "./components/Dashboard/CustomerDashboard";
@@ -27,6 +28,7 @@ import SalesReport from "./components/reports/SalesReport";
 import DashboardAnalytics from "./components/reports/DashboardAnalytics";
 import TrendInsights from "./components/reports/TrendInsights";
 import NotFound from "./components/NotFound";
+import ReportsHome from "./components/reports/ReportsHome";
 import './App.css';
 
 function PrivateRoute({ children }) {
@@ -40,6 +42,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route
             path="/*"
             element={
@@ -66,6 +69,7 @@ function App() {
                     <Route path="/bank/accounts" element={<BankAccountList />} />
                     <Route path="/bank/transactions" element={<BankTransactionList />} />
                     <Route path="/bank/postings" element={<PostingList />} />
+                    <Route path="/reports" element={<ReportsHome />} />
                     <Route path="/reports/stock" element={<StockReport />} />
                     <Route path="/reports/sales" element={<SalesReport />} />
                     <Route path="/reports/dashboard" element={<DashboardAnalytics />} />

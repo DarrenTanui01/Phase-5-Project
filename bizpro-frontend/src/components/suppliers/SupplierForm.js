@@ -3,25 +3,40 @@ import { Typography, TextField, Button, Box } from "@mui/material";
 import api from "../../api/api";
 
 const SupplierForm = () => {
-  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [form, setForm] = useState({ name: "", contact_info: "" });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await api.post("/suppliers", form);
-    setForm({ name: "", email: "", phone: "" });
+    setForm({ name: "", contact_info: "" });
     alert("Supplier added!");
   };
 
   return (
     <Box sx={{ maxWidth: 400, mx: "auto" }}>
-      <Typography variant="h5" mb={2}>Add/Edit Supplier</Typography>
+      <Typography variant="h5" mb={2}>Add Supplier</Typography>
       <form onSubmit={handleSubmit}>
-        <TextField label="Name" name="name" value={form.name} onChange={handleChange} fullWidth margin="normal" />
-        <TextField label="Email" name="email" value={form.email} onChange={handleChange} fullWidth margin="normal" />
-        <TextField label="Phone" name="phone" value={form.phone} onChange={handleChange} fullWidth margin="normal" />
-        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Submit</Button>
+        <TextField
+          label="Name"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Contact Info"
+          name="contact_info"
+          value={form.contact_info}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+          Submit
+        </Button>
       </form>
     </Box>
   );

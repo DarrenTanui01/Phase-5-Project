@@ -22,6 +22,7 @@ import OrderList from "./components/orders/OrderList";
 import OrderForm from "./components/orders/OrderForm";
 import BankAccountList from "./components/bank/BankAccountList";
 import BankTransactionList from "./components/bank/BankTransactionList";
+import BankTransactionForm from "./components/bank/BankTransactionForm";
 import PostingList from "./components/bank/PostingList";
 import StockReport from "./components/reports/StockReport";
 import SalesReport from "./components/reports/SalesReport";
@@ -29,11 +30,16 @@ import DashboardAnalytics from "./components/reports/DashboardAnalytics";
 import TrendInsights from "./components/reports/TrendInsights";
 import NotFound from "./components/NotFound";
 import ReportsHome from "./components/reports/ReportsHome";
+import CompanyList from "./components/companies/CompanyList";
+import CompanyForm from "./components/companies/CompanyForm";
 import './App.css';
 
 function PrivateRoute({ children }) {
   const user = JSON.parse(localStorage.getItem("user"));
-  return user ? children : <Navigate to="/login" />;
+  const token = localStorage.getItem("token");
+  // If not logged in, redirect to login
+  if (!user || !token) return <Navigate to="/login" />;
+  return children;
 }
 
 function App() {
@@ -68,12 +74,15 @@ function App() {
                     <Route path="/orders/new" element={<OrderForm />} />
                     <Route path="/bank/accounts" element={<BankAccountList />} />
                     <Route path="/bank/transactions" element={<BankTransactionList />} />
+                    <Route path="/bank/transactions/new" element={<BankTransactionForm />} />
                     <Route path="/bank/postings" element={<PostingList />} />
                     <Route path="/reports" element={<ReportsHome />} />
                     <Route path="/reports/stock" element={<StockReport />} />
                     <Route path="/reports/sales" element={<SalesReport />} />
                     <Route path="/reports/dashboard" element={<DashboardAnalytics />} />
                     <Route path="/reports/trends" element={<TrendInsights />} />
+                    <Route path="/companies" element={<CompanyList />} />
+                    <Route path="/companies/new" element={<CompanyForm />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>

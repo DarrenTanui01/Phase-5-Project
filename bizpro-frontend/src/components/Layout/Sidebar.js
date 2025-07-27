@@ -4,6 +4,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import StoreIcon from "@mui/icons-material/Store";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import BusinessIcon from "@mui/icons-material/Business";
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 
@@ -16,6 +17,7 @@ const menu = {
     { text: "Products", icon: <StoreIcon />, path: "/products" },
     { text: "Orders", icon: <AssessmentIcon />, path: "/orders" },
     { text: "Bank", icon: <AssessmentIcon />, path: "/bank" },
+    { text: "Companies", icon: <BusinessIcon />, path: "/companies" },
     { text: "Reports", icon: <AssessmentIcon />, path: "/reports" },
   ],
   supplier: [

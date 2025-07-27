@@ -8,7 +8,10 @@ from utils import role_required
 customer_schema = CustomerSchema()
 
 class CustomerAPI(MethodView):
-    decorators = [role_required({'admin': ['GET', 'POST', 'PUT', 'DELETE'], 'customer': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
+    decorators = [role_required({
+        'admin': ['GET', 'POST', 'PUT', 'DELETE'],
+        'customer': ['POST']
+    }), jwt_required()]
 
     def get(self, customer_id=None):
         if customer_id:

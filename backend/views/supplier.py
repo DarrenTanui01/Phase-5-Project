@@ -8,7 +8,10 @@ from utils import role_required
 supplier_schema = SupplierSchema()
 
 class SupplierAPI(MethodView):
-    decorators = [role_required({'admin': ['GET','POST'], 'supplier': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
+    decorators = [role_required({
+        'admin': ['GET', 'POST', 'PUT', 'DELETE'],
+        'supplier': ['POST']
+    }), jwt_required()]
 
     def get(self, supplier_id=None):
         if supplier_id:

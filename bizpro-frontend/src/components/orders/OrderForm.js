@@ -74,7 +74,7 @@ const OrderForm = () => {
             />
           </Box>
         ))}
-        <Button variant="outlined" onClick={addProduct} sx={{ mb: 2 }}>Add Product</Button>
+        <Button onClick={addProduct} sx={{ mb: 2 }}>Add Product</Button>
         <TextField
           label="Status"
           name="status"

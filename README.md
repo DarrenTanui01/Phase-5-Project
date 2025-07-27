@@ -1,4 +1,4 @@
-# Getting Started with Create React App
+# Getting Started with BizPro React App
 
 This project was bootstrapped with [Create React App]
 
@@ -187,11 +187,23 @@ Server runs at `http://localhost:5000/api/`
 
 ## Role-Based Access
 
-- Admin: Full access
-- Supplier: Supplier data and products
-- Customer: Customer data and orders
-- Bank: Bank accounts and transactions
-- Company: Company data and analytics
+- **Admin:** Full access to all CRUD for users, suppliers, customers, products, companies, and reports. Can read and delete orders, read bank accounts and transactions.
+- **Supplier:** Can create suppliers and full CRUD for products.
+- **Customer:** Can create customers and full CRUD for their own orders.
+- **Bank:** Can create bank accounts, transactions, and postings. No update or delete.
+- **Company:** Can access company data and analytics.
+- **Other roles:** No access to restricted endpoints.
+
+### Permission Details
+
+- **Suppliers:** Admin can perform all CRUD. Supplier can only create. Others denied.
+- **Customers:** Admin can perform all CRUD. Customer can only create. Others denied.
+- **Products:** Admin and supplier have full CRUD. Others denied.
+- **Orders:** Admin can read and delete. Customer can create, edit, and delete. Others denied.
+- **Bank Accounts & Transactions:** Bank can create. Admin can read. Others denied.
+- **Reports & Analytics:** Only admin can read. Others denied.
+
+If a user tries to access a forbidden endpoint, a friendly message and padlock icon will be shown.
 
 ## Development
 

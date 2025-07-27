@@ -8,7 +8,10 @@ from utils import role_required
 product_schema = ProductSchema()
 
 class ProductAPI(MethodView):
-    decorators = [role_required({'admin': ['GET', 'POST', 'PUT', 'DELETE'], 'supplier': ['GET', 'POST', 'PUT', 'DELETE']}), jwt_required()]
+    decorators = [role_required({
+        'admin': ['GET', 'POST', 'PUT', 'DELETE'],
+        'supplier': ['GET', 'POST', 'PUT', 'DELETE']
+    }), jwt_required()]
 
     def get(self, product_id=None):
         if product_id:

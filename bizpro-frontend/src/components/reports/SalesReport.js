@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
-import { Typography, Card, Box, Divider, Paper } from "@mui/material";
+import { Typography, Card, Box, Divider, Paper, Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 const COLORS = ["#1976d2", "#26a69a", "#ff7043"];
 
 const SalesReport = () => {
-  const [report, setReport] = useState({ total_orders: 0, total_products_sold: 0, total_payments_received: 0 });
+  const [report, setReport] = useState({ total_orders: 0, total_products_sold: 0, total_payments_received: 0, orders: [] });
 
   useEffect(() => {
     api.get("/sales_reports").then(res => setReport(res.data));
@@ -70,6 +70,45 @@ const SalesReport = () => {
             </PieChart>
           </ResponsiveContainer>
         </Box>
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      {/* Tabular Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>Sales Table</Typography>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Order ID</TableCell>
+              <TableCell>Customer</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Products Sold</TableCell>
+              <TableCell>Payment Received</TableCell>
+              <TableCell>Total Due</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {Array.isArray(report.orders) && report.orders.length > 0 ? (
+              report.orders.map(order => (
+                <TableRow key={order.id}>
+                  <TableCell>{order.id}</TableCell>
+                  <TableCell>{order.customer_name}</TableCell>
+                  <TableCell>{order.status}</TableCell>
+                  <TableCell>{order.date}</TableCell>
+                  <TableCell>{order.products_sold}</TableCell>
+                  <TableCell>{order.payment_received}</TableCell>
+                  <TableCell>{order.total_due}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center">No sales data available</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </Box>
 
       <Divider sx={{ my: 3 }} />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
-import { Grid, Card, Typography, Box, Paper } from "@mui/material";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
+import { Grid, Card, Typography, Box, Paper, Divider } from "@mui/material";
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area, CartesianGrid } from "recharts";
 import { DataGrid } from "@mui/x-data-grid";
 
 const COLORS = ["#1976d2", "#26a69a", "#ff7043", "#7e57c2", "#ec407a"];
@@ -61,164 +61,246 @@ const AdminDashboard = () => {
   const formatTrendData = (obj) =>
     obj ? Object.entries(obj).map(([date, value]) => ({ date, value })) : [];
 
+  // Stacked area chart data
+  const stackedTrendData = (() => {
+    const orders = data.trend_insights?.orders_last_7_days || {};
+    const postings = data.trend_insights?.postings_last_7_days || {};
+    const transactions = data.trend_insights?.bank_transactions_last_7_days || {};
+    // Get all unique dates
+    const allDates = Array.from(new Set([
+      ...Object.keys(orders),
+      ...Object.keys(postings),
+      ...Object.keys(transactions)
+    ])).sort();
+    // Build array for chart
+    return allDates.map(date => ({
+      date,
+      orders: orders[date] || 0,
+      postings: postings[date] || 0,
+      transactions: transactions[date] || 0
+    }));
+  })();
+
   return (
-    <Box>
+    <Card sx={{ p: 2 }}>
+      {/* Admin Profile Card */}
+      <Box sx={{ mb: 4 }}>
+        <Paper sx={{ p: 2, bgcolor: "#f5f6fa", color: "#333", textAlign: "left" }}>
+          <Typography variant="h6" mb={1}>Admin Profile</Typography>
+          <Typography><strong>Username:</strong> {data.admin_profile?.username}</Typography>
+          <Typography><strong>Email:</strong> {data.admin_profile?.email}</Typography>
+          <Typography><strong>Role:</strong> {data.admin_profile?.role}</Typography>
+        </Paper>
+      </Box>
+
       <Typography variant="h4" mb={2}>Admin Dashboard</Typography>
-      <Grid container spacing={2}>
-        {/* Dashboard summary cards */}
-        {summary.map((item, idx) => (
-          <Grid item xs={12} md={4} key={item.label}>
-            <Paper sx={{ p: 2, bgcolor: item.color, color: "#fff", textAlign: "center" }}>
-              <Typography variant="h6">{item.label}</Typography>
-              <Typography variant="h4">{item.value}</Typography>
-            </Paper>
+
+      {/* Summary Cards Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>Summary</Typography>
+        <Grid container spacing={2}>
+          {summary.map((item, idx) => (
+            <Grid item xs={12} md={4} key={item.label}>
+              <Paper sx={{ p: 2, bgcolor: item.color, color: "#fff", textAlign: "center" }}>
+                <Typography variant="h6">{item.label}</Typography>
+                <Typography variant="h4">{item.value}</Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      {/* Stock Distribution by Supplier (Pie Chart) */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>Stock Distribution by Supplier</Typography>
+        <Box sx={{ width: "100%", height: 420 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={supplierPieData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={170}
+                label
+              >
+                {supplierPieData.map((entry, idx) => (
+                  <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </Box>
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      {/* Sales Report (Line Chart) */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>Sales Report (Orders & Payments)</Typography>
+        <Box sx={{ width: "100%", height: 420 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={customerBarData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="orders" stroke="#1976d2" name="Orders" />
+              <Line type="monotone" dataKey="spent" stroke="#ff7043" name="Spent" />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      {/* Trends Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>Trends (Last 7 Days)</Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <Typography variant="subtitle1">Order Trends</Typography>
+            <Box sx={{ width: "100%", height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={formatTrendData(data.trend_insights?.orders_last_7_days)}>
+                  <defs>
+                    <linearGradient id="ordersColorDash" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#1976d2" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#1976d2" stopOpacity={0.2}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="value" stroke="#1976d2" fill="url(#ordersColorDash)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Box>
           </Grid>
-        ))}
+          <Grid item xs={12} md={4}>
+            <Typography variant="subtitle1">Postings Trends</Typography>
+            <Box sx={{ width: "100%", height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={formatTrendData(data.trend_insights?.postings_last_7_days)}>
+                  <defs>
+                    <linearGradient id="postingsColorDash" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#26a69a" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#26a69a" stopOpacity={0.2}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="value" stroke="#26a69a" fill="url(#postingsColorDash)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Typography variant="subtitle1">Bank Transactions Trends</Typography>
+            <Box sx={{ width: "100%", height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={formatTrendData(data.trend_insights?.bank_transactions_last_7_days)}>
+                  <defs>
+                    <linearGradient id="bankColorDash" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ff7043" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#ff7043" stopOpacity={0.2}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="value" stroke="#ff7043" fill="url(#bankColorDash)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Box>
+          </Grid>
+        </Grid>
+        {/* Stacked Area Chart for all trends */}
+        <Box sx={{ mt: 4, width: "100%", height: 320 }}>
+          <Typography variant="subtitle1" mb={2}>All Trends Comparison (Stacked Area Chart)</Typography>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={stackedTrendData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Area type="monotone" dataKey="orders" stackId="1" stroke="#1976d2" fill="#1976d2" fillOpacity={0.4} name="Orders" />
+              <Area type="monotone" dataKey="postings" stackId="1" stroke="#26a69a" fill="#26a69a" fillOpacity={0.4} name="Postings" />
+              <Area type="monotone" dataKey="transactions" stackId="1" stroke="#ff7043" fill="#ff7043" fillOpacity={0.4} name="Bank Transactions" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Box>
+      </Box>
 
-        {/* Stock Distribution by Supplier (Pie Chart) */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Stock Distribution by Supplier</Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={supplierPieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label
-                >
-                  {supplierPieData.map((entry, idx) => (
-                    <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
-        </Grid>
+      <Divider sx={{ my: 3 }} />
 
-        {/* Sales Report (Line Chart) */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Sales Report (Orders & Payments)</Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={customerBarData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="orders" stroke="#1976d2" name="Orders" />
-                <Line type="monotone" dataKey="spent" stroke="#ff7043" name="Spent" />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-        </Grid>
+      {/* Supplier Analytics Table */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>Supplier Analytics</Typography>
+        <DataGrid
+          rows={Array.isArray(data.supplier_analytics) ? data.supplier_analytics.map((s, idx) => ({
+            id: s.supplier_id || idx,
+            name: s.name,
+            total_stock: s.total_stock,
+            average_price: s.average_price
+          })) : []}
+          columns={[
+            { field: "name", headerName: "Supplier", flex: 1 },
+            { field: "total_stock", headerName: "Total Stock", flex: 1, type: "number" },
+            { field: "average_price", headerName: "Avg Price", flex: 1, type: "number" }
+          ]}
+          autoHeight
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+        />
+      </Box>
 
-        {/* Trends (Last 7 Days) */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Order Trends (Last 7 Days)</Typography>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={formatTrendData(data.trend_insights?.orders_last_7_days)}>
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="value" stroke="#1976d2" />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Postings Trends (Last 7 Days)</Typography>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={formatTrendData(data.trend_insights?.postings_last_7_days)}>
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#26a69a" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Bank Transactions Trends (Last 7 Days)</Typography>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={formatTrendData(data.trend_insights?.bank_transactions_last_7_days)}>
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#ff7043" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </Grid>
+      <Divider sx={{ my: 3 }} />
 
-        {/* Supplier Analytics Table */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Supplier Analytics</Typography>
-            <DataGrid
-              rows={Array.isArray(data.supplier_analytics) ? data.supplier_analytics.map((s, idx) => ({
-                id: s.supplier_id || idx,
-                name: s.name,
-                total_stock: s.total_stock,
-                average_price: s.average_price
-              })) : []}
-              columns={[
-                { field: "name", headerName: "Supplier", flex: 1 },
-                { field: "total_stock", headerName: "Total Stock", flex: 1, type: "number" },
-                { field: "average_price", headerName: "Avg Price", flex: 1, type: "number" }
-              ]}
-              autoHeight
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-            />
-          </Card>
-        </Grid>
+      {/* Customer Report Table */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>Customer Report</Typography>
+        <DataGrid
+          rows={Array.isArray(data.customer_report) ? data.customer_report.map((c, idx) => ({
+            id: c.customer_id || idx,
+            name: c.name,
+            total_orders: c.total_orders,
+            total_spent: c.total_spent
+          })) : []}
+          columns={[
+            { field: "name", headerName: "Customer", flex: 1 },
+            { field: "total_orders", headerName: "Orders", flex: 1, type: "number" },
+            { field: "total_spent", headerName: "Spent", flex: 1, type: "number" }
+          ]}
+          autoHeight
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+        />
+      </Box>
 
-        {/* Customer Report Table */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Customer Report</Typography>
-            <DataGrid
-              rows={Array.isArray(data.customer_report) ? data.customer_report.map((c, idx) => ({
-                id: c.customer_id || idx,
-                name: c.name,
-                total_orders: c.total_orders,
-                total_spent: c.total_spent
-              })) : []}
-              columns={[
-                { field: "name", headerName: "Customer", flex: 1 },
-                { field: "total_orders", headerName: "Orders", flex: 1, type: "number" },
-                { field: "total_spent", headerName: "Spent", flex: 1, type: "number" }
-              ]}
-              autoHeight
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-            />
-          </Card>
-        </Grid>
+      <Divider sx={{ my: 3 }} />
 
-        {/* Bank Accounts Table */}
-        <Grid item xs={12}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6">Bank Accounts</Typography>
-            <DataGrid
-              rows={bankTableRows}
-              columns={bankTableColumns}
-              autoHeight
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-            />
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+      {/* Bank Accounts Table */}
+      <Box>
+        <Typography variant="h6" mb={2}>Bank Accounts</Typography>
+        <DataGrid
+          rows={bankTableRows}
+          columns={bankTableColumns}
+          autoHeight
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+        />
+      </Box>
+    </Card>
   );
 };
 

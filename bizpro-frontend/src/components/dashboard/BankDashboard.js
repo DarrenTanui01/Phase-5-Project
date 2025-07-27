@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
-import { Typography, Card, Grid, Table, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
+import { Typography, Card, Grid, Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material"; // Removed Paper import
 
 const BankDashboard = () => {
   const [accounts, setAccounts] = useState([]);

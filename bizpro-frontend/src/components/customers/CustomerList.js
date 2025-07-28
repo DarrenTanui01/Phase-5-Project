@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import CustomerForm from "./CustomerForm";
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
   const [editCustomer, setEditCustomer] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
-  const navigate = useNavigate();
+  const [openForm, setOpenForm] = useState(false);
 
   useEffect(() => {
     fetchCustomers();
@@ -34,10 +34,10 @@ const CustomerList = () => {
   };
 
   return (
-    <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2, filter: openForm ? "blur(4px)" : "none" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h5">Customer List</Typography>
-        <Button variant="contained" color="primary" onClick={() => navigate("/customers/new")}>
+        <Button variant="contained" color="primary" onClick={() => setOpenForm(true)}>
           Add Customer
         </Button>
       </Box>
@@ -66,6 +66,9 @@ const CustomerList = () => {
           ))}
         </TableBody>
       </Table>
+      <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
+        <CustomerForm onSuccess={() => { setOpenForm(false); fetchCustomers(); }} />
+      </Dialog>
       <Dialog open={!!editCustomer} onClose={() => setEditCustomer(null)}>
         <DialogTitle>Edit Customer</DialogTitle>
         <DialogContent>

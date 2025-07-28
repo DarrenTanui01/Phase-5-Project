@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import ProductForm from "./ProductForm";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState({ name: "", description: "", price: "", stock: "", supplier_id: "" });
-  const navigate = useNavigate();
+  const [openForm, setOpenForm] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -42,10 +42,10 @@ const ProductList = () => {
   };
 
   return (
-    <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2, filter: openForm ? "blur(4px)" : "none" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h5">Product List</Typography>
-        <Button variant="contained" color="primary" onClick={() => navigate("/products/new")}>
+        <Button variant="contained" color="primary" onClick={() => setOpenForm(true)}>
           Add Product
         </Button>
       </Box>
@@ -78,6 +78,9 @@ const ProductList = () => {
           ))}
         </TableBody>
       </Table>
+      <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
+        <ProductForm onSuccess={() => { setOpenForm(false); fetchProducts(); }} />
+      </Dialog>
       <Dialog open={!!editProduct} onClose={() => setEditProduct(null)}>
         <DialogTitle>Edit Product</DialogTitle>
         <DialogContent>

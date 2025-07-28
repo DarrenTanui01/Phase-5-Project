@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, Box, TextField } from "@mui/material";
+import SupplierForm from "./SupplierForm";
 
 const SupplierList = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [editSupplier, setEditSupplier] = useState(null);
   const [form, setForm] = useState({ name: "", contact_info: "" });
-  const navigate = useNavigate();
+  const [openForm, setOpenForm] = useState(false);
 
   useEffect(() => {
     fetchSuppliers();
@@ -19,7 +19,10 @@ const SupplierList = () => {
 
   const handleEdit = (supplier) => {
     setEditSupplier(supplier);
-    setForm({ name: supplier.name, contact_info: supplier.contact_info });
+    setForm({
+      name: supplier.name,
+      contact_info: supplier.contact_info
+    });
   };
 
   const handleDelete = async (id) => {
@@ -34,10 +37,10 @@ const SupplierList = () => {
   };
 
   return (
-    <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2, filter: openForm ? "blur(4px)" : "none" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography variant="h5">Supplier List</Typography>
-        <Button variant="contained" color="primary" onClick={() => navigate("/suppliers/new")}>
+        <Typography variant="h5">Suppliers</Typography>
+        <Button variant="contained" color="primary" onClick={() => setOpenForm(true)}>
           Add Supplier
         </Button>
       </Box>
@@ -64,23 +67,14 @@ const SupplierList = () => {
           ))}
         </TableBody>
       </Table>
+      <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
+        <SupplierForm onSuccess={() => { setOpenForm(false); fetchSuppliers(); }} />
+      </Dialog>
       <Dialog open={!!editSupplier} onClose={() => setEditSupplier(null)}>
         <DialogTitle>Edit Supplier</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Name"
-            value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Contact Info"
-            value={form.contact_info}
-            onChange={e => setForm({ ...form, contact_info: e.target.value })}
-            fullWidth
-            margin="normal"
-          />
+          <TextField label="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} fullWidth margin="normal" />
+          <TextField label="Contact Info" value={form.contact_info} onChange={e => setForm({ ...form, contact_info: e.target.value })} fullWidth margin="normal" />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditSupplier(null)}>Cancel</Button>

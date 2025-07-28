@@ -42,7 +42,18 @@ const Sidebar = () => {
   if (!user) return null;
   const items = menu[user.role] || [];
   return (
-    <Drawer variant="permanent" sx={{ width: 220, flexShrink: 0 }}>
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: 220,
+        flexShrink: 0,
+        "& .MuiDrawer-paper": {
+          width: 220,
+          boxSizing: "border-box",
+          mt: "72px", 
+        },
+      }}
+    >
       <List>
         {items.map((item) => (
           <ListItem button key={item.text} component={Link} to={item.path}>

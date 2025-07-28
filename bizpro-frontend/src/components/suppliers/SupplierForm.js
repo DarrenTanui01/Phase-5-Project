@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Typography, TextField, Button, Box } from "@mui/material";
 import api from "../../api/api";
 
-const SupplierForm = () => {
+const SupplierForm = ({ onSuccess }) => {
   const [form, setForm] = useState({ name: "", contact_info: "" });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -11,12 +11,12 @@ const SupplierForm = () => {
     e.preventDefault();
     await api.post("/suppliers", form);
     setForm({ name: "", contact_info: "" });
-    alert("Supplier added!");
+    if (onSuccess) onSuccess();
   };
 
   return (
     <Box sx={{ maxWidth: 400, mx: "auto" }}>
-      <Typography variant="h5" mb={2}>Add Supplier</Typography>
+      <Typography variant="h5" mb={2}>Add/Edit Supplier</Typography>
       <form onSubmit={handleSubmit}>
         <TextField
           label="Name"

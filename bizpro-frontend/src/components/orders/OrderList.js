@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from "@mui/material";
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, Box } from "@mui/material";
+import OrderForm from "./OrderForm";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [editOrder, setEditOrder] = useState(null);
-  const [form, setForm] = useState({ customer_id: "", status: "", products: [] });
+  const [form, setForm] = useState({ customer_id: "", status: "", date: "", product_ids: [] });
+  const [openForm, setOpenForm] = useState(false);
 
   useEffect(() => {
     fetchOrders();
     api.get("/customers").then(res => setCustomers(res.data));
+    api.get("/products").then(res => setProducts(res.data));
   }, []);
 
   const fetchOrders = () => {
@@ -22,7 +26,8 @@ const OrderList = () => {
     setForm({
       customer_id: order.customer_id,
       status: order.status,
-      products: order.products_with_quantities || []
+      date: order.date,
+      product_ids: order.product_ids || []
     });
   };
 
@@ -38,8 +43,13 @@ const OrderList = () => {
   };
 
   return (
-    <Paper sx={{ p: 2 }}>
-      <Typography variant="h5" mb={2}>Order List</Typography>
+    <Paper sx={{ p: 2, filter: openForm ? "blur(4px)" : "none" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <Typography variant="h5">Order List</Typography>
+        <Button variant="contained" color="primary" onClick={() => setOpenForm(true)}>
+          Add Order
+        </Button>
+      </Box>
       <Table>
         <TableHead>
           <TableRow>
@@ -59,9 +69,7 @@ const OrderList = () => {
               <TableCell>{o.status}</TableCell>
               <TableCell>{o.date}</TableCell>
               <TableCell>
-                {(o.products_with_quantities || []).map(p => (
-                  <div key={p.product_id}>{p.name} x {p.quantity}</div>
-                ))}
+                {(o.product_ids || []).map(pid => products.find(p => p.id === pid)?.name || pid).join(", ")}
               </TableCell>
               <TableCell>
                 <Button size="small" onClick={() => handleEdit(o)}>Edit</Button>
@@ -71,23 +79,13 @@ const OrderList = () => {
           ))}
         </TableBody>
       </Table>
+      <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
+        <OrderForm onSuccess={() => { setOpenForm(false); fetchOrders(); }} />
+      </Dialog>
       <Dialog open={!!editOrder} onClose={() => setEditOrder(null)}>
         <DialogTitle>Edit Order</DialogTitle>
         <DialogContent>
-          <TextField
-            select
-            label="Customer"
-            value={form.customer_id}
-            onChange={e => setForm({ ...form, customer_id: e.target.value })}
-            fullWidth
-            margin="normal"
-          >
-            {customers.map(c => (
-              <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-            ))}
-          </TextField>
-          <TextField label="Status" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} fullWidth margin="normal" />
-          {/* For simplicity, editing products is omitted here. Use OrderForm for adding products. */}
+          {/* You can add form fields for editing here, similar to OrderForm */}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOrder(null)}>Cancel</Button>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Typography, TextField, Button, Box } from "@mui/material";
 import api from "../../api/api";
 
-const BankAccountForm = () => {
+const BankAccountForm = ({ onSuccess }) => {
   const [form, setForm] = useState({ account_name: "", account_number: "", bank_name: "", balance: "" });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -11,7 +11,7 @@ const BankAccountForm = () => {
     e.preventDefault();
     await api.post("/bank_accounts", form);
     setForm({ account_name: "", account_number: "", bank_name: "", balance: "" });
-    alert("Bank account added!");
+    if (onSuccess) onSuccess();
   };
 
   return (

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
-import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, Box, TextField } from "@mui/material";
+import CompanyForm from "./CompanyForm";
 
 const CompanyList = () => {
   const [companies, setCompanies] = useState([]);
   const [editCompany, setEditCompany] = useState(null);
   const [form, setForm] = useState({ name: "", address: "", contact_info: "" });
-  const navigate = useNavigate();
+  const [openForm, setOpenForm] = useState(false);
 
   useEffect(() => {
     fetchCompanies();
@@ -38,10 +38,10 @@ const CompanyList = () => {
   };
 
   return (
-    <Paper sx={{ p: 2 }}>
+    <Paper sx={{ p: 2, filter: openForm ? "blur(4px)" : "none" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography variant="h5">Company List</Typography>
-        <Button variant="contained" color="primary" onClick={() => navigate("/companies/new")}>
+        <Typography variant="h5">Companies</Typography>
+        <Button variant="contained" color="primary" onClick={() => setOpenForm(true)}>
           Add Company
         </Button>
       </Box>
@@ -70,6 +70,9 @@ const CompanyList = () => {
           ))}
         </TableBody>
       </Table>
+      <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
+        <CompanyForm onSuccess={() => { setOpenForm(false); fetchCompanies(); }} />
+      </Dialog>
       <Dialog open={!!editCompany} onClose={() => setEditCompany(null)}>
         <DialogTitle>Edit Company</DialogTitle>
         <DialogContent>

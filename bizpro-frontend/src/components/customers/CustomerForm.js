@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Typography, TextField, Button, Box } from "@mui/material";
 import api from "../../api/api";
 
-const CustomerForm = () => {
+const CustomerForm = ({ onSuccess }) => {
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -12,6 +12,7 @@ const CustomerForm = () => {
     await api.post("/customers", form);
     setForm({ name: "", email: "", phone: "" });
     alert("Customer added!");
+    if (onSuccess) onSuccess();
   };
 
   return (

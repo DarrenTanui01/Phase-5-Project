@@ -51,7 +51,19 @@ class ProductAPI(MethodView):
         return '', 204
 
 class ProductConversionAPI(MethodView):
-    decorators = [role_required({'admin': ['POST'], 'supplier': ['POST']}), jwt_required()]
+    decorators = [role_required({'admin': ['GET'], 'supplier': ['POST']}), jwt_required()]
+
+    def get(self):
+        
+        products = Product.query.all()
+        result = []
+        for p in products:
+            result.append({
+                "product_id": p.id,
+                "name": p.name,
+                "stock": p.stock
+            })
+        return jsonify(result), 200
 
     def post(self):
         data = request.json

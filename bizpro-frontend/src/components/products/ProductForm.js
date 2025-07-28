@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Typography, TextField, Button, Box, MenuItem } from "@mui/material";
 import api from "../../api/api";
 
-const ProductForm = () => {
+const ProductForm = ({ onSuccess }) => {
   const [form, setForm] = useState({ name: "", description: "", price: "", stock: "", supplier_id: "" });
   const [suppliers, setSuppliers] = useState([]);
 
@@ -16,7 +16,7 @@ const ProductForm = () => {
     e.preventDefault();
     await api.post("/products", form);
     setForm({ name: "", description: "", price: "", stock: "", supplier_id: "" });
-    alert("Product added!");
+    if (onSuccess) onSuccess();
   };
 
   return (
